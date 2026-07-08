@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database (for local development)
+  db:
+    image: postgres:16-alpine
+    container_name: examguard-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: examguard
+      POSTGRES_USER: examguard
+      POSTGRES_PASSWORD: examguard_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: examguard-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://examguard:examguard_password@db:5432/examguard
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=your-secret-key-min-32-chars-here
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
